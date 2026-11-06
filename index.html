@@ -2,8 +2,21 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Movie Tracker Pro + Library</title>
+    
+    <!-- ===== PWA / iOS НАСТРОЙКИ ===== -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Movie Tracker">
+    <meta name="theme-color" content="#0f0f11">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Иконка для рабочего стола (можно заменить на свою ссылку) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230f0f11'/%3E%3Cpath d='M30 25h40v50H30z' fill='%23ff7a00'/%3E%3Ccircle cx='50' cy='50' r='12' fill='%230f0f11'/%3E%3C/svg%3E">
+    
+    <title>Movie Tracker</title>
+    
+    <!-- Стили (все как в предыдущей версии) -->
     <style>
         :root {
             --bg-color: #0f0f11;
@@ -13,6 +26,8 @@
             --text-muted: #8e8e93;
             --danger: #ff453a;
             --success: #30d158;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * {
@@ -21,35 +36,61 @@
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Отключаем выделение и скролл самого body для эффекта приложения */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            position: fixed;
+            width: 100%;
         }
 
         body {
-            background-color: #e5e5e5;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
         }
 
         .phone-frame {
-            width: 375px;
-            height: 812px;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
             background-color: var(--bg-color);
-            border-radius: 40px;
+            border-radius: 0;
             overflow: hidden;
             position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            border: 8px solid #000;
+            border: none;
+            /* Отступы для "челки" и нижней полоски iPhone */
+            padding-top: var(--safe-top);
+            padding-bottom: var(--safe-bottom);
+        }
+
+        /* На больших экранах (десктоп) показываем в рамке */
+        @media (min-width: 600px) {
+            .phone-frame {
+                width: 375px;
+                height: 812px;
+                border-radius: 40px;
+                border: 8px solid #000;
+                box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+            body { background-color: #e5e5e5; }
         }
 
         /* Шапка */
         .header {
             padding: 20px 20px 10px;
             color: var(--text-main);
-            margin-top: 20px;
+            margin-top: 10px;
             z-index: 10;
             background: var(--bg-color);
         }
@@ -73,7 +114,7 @@
         .icon-btn:active { transform: scale(0.85); background: #333; }
         .icon-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
-        /* Главные вкладки (Коллекция/Библиотека) */
+        /* Главные вкладки */
         .main-tabs {
             display: flex;
             background: var(--card-bg);
@@ -107,7 +148,7 @@
             z-index: 1;
         }
 
-        /* Внутренние табы (Фильмы/Сериалы) */
+        /* Внутренние табы */
         .sub-tabs {
             display: flex;
             background: var(--card-bg);
@@ -157,6 +198,8 @@
             color: white;
             font-size: 14px;
             outline: none;
+            -webkit-user-select: text;
+            user-select: text;
         }
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
@@ -169,6 +212,7 @@
             padding: 10px 20px;
             overflow-y: auto;
             overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* Список */
@@ -265,7 +309,6 @@
             100% { transform: scale(1); }
         }
 
-        /* Кнопка "Хочу посмотреть" в библиотеке */
         .wishlist-btn {
             background: none;
             border: none;
@@ -281,7 +324,6 @@
         .wishlist-btn:active { transform: scale(0.8); }
         .wishlist-btn svg { width: 22px; height: 22px; fill: currentColor; }
 
-        /* Меню карточки */
         .options-btn {
             background: none;
             border: none;
@@ -341,6 +383,7 @@
             left: 0;
             right: 0;
             padding: 20px;
+            padding-bottom: calc(20px + var(--safe-bottom));
             display: flex;
             justify-content: center;
             background: linear-gradient(to top, var(--bg-color) 60%, transparent);
@@ -373,9 +416,9 @@
             display: none;
             justify-content: center;
             align-items: center;
-            border-radius: 40px;
             z-index: 100;
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             opacity: 0;
             transition: opacity 0.3s;
         }
@@ -388,6 +431,7 @@
             overflow-y: auto;
             border-radius: 30px 30px 0 0;
             padding: 25px;
+            padding-bottom: calc(25px + var(--safe-bottom));
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -412,10 +456,12 @@
             padding: 12px;
             border-radius: 12px;
             color: white;
-            font-size: 15px;
+            font-size: 16px; /* 16px чтобы iOS не зумил при фокусе */
             outline: none;
             width: 100%;
             transition: border 0.3s;
+            -webkit-user-select: text;
+            user-select: text;
         }
         .input-group input:focus { border: 1px solid var(--accent-orange); }
 
@@ -473,6 +519,7 @@
         .detail-card {
             background: #1c1c1e;
             width: 85%;
+            max-width: 340px;
             border-radius: 30px;
             padding: 25px;
             display: flex;
@@ -583,7 +630,6 @@
         .btn-add-to-collection { background: var(--accent-orange); color: white; }
         .detail-actions svg { width: 16px; height: 16px; fill: currentColor; }
 
-        /* Фильтры библиотеки */
         .library-filters {
             display: flex;
             gap: 10px;
@@ -627,14 +673,12 @@
             <input type="text" id="searchInput" placeholder="Поиск по названию...">
         </div>
 
-        <!-- Главные вкладки -->
         <div class="main-tabs">
             <div class="main-tab-indicator" id="mainTabIndicator"></div>
             <div class="main-tab active" onclick="switchMainTab('collection', this)">Коллекция</div>
             <div class="main-tab" onclick="switchMainTab('library', this)">Библиотека</div>
         </div>
 
-        <!-- Внутренние вкладки -->
         <div class="sub-tabs" id="subTabs">
             <div class="sub-tab-indicator" id="subTabIndicator"></div>
             <div class="sub-tab active" data-type="Фильм" onclick="switchSubTab('Фильм', this)">Фильмы</div>
@@ -642,7 +686,6 @@
         </div>
     </div>
 
-    <!-- Фильтры для библиотеки -->
     <div class="library-filters" id="libraryFilters" style="display: none;">
         <button class="filter-btn active" id="filterAll" onclick="setLibraryFilter('all')">Все</button>
         <button class="filter-btn" id="filterWishlist" onclick="setLibraryFilter('wishlist')">Хочу посмотреть</button>
@@ -658,7 +701,7 @@
         </button>
     </div>
 
-    <!-- Модальное окно: Форма -->
+    <!-- Модалка: Форма -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-form">
             <h2 id="modalTitle">Добавить</h2>
@@ -698,7 +741,6 @@
                 </div>
             </div>
 
-            <!-- Чекбокс "Хочу посмотреть" только для библиотеки -->
             <div class="input-group" id="wishlistCheckboxGroup" style="display: none; flex-direction: row; align-items: center; gap: 10px; margin-top: 5px;">
                 <input type="checkbox" id="inputWishlist" checked style="width: 20px; height: 20px; accent-color: var(--accent-orange);">
                 <label for="inputWishlist" style="color: white; font-size: 14px; cursor: pointer;">Хочу посмотреть</label>
@@ -709,7 +751,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно: Визитка -->
+    <!-- Модалка: Визитка -->
     <div class="modal-overlay" id="detailOverlay">
         <div class="detail-card">
             <button class="detail-close" onclick="closeDetail()">
@@ -731,7 +773,6 @@
             </div>
 
             <div class="detail-actions">
-                <!-- Кнопка "В коллекцию" (только для библиотеки) -->
                 <button class="btn-add-to-collection" id="detailAddToCollection" style="display: none;">
                     <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                     Добавить в коллекцию
@@ -752,32 +793,31 @@
 </div>
 
 <script>
-    // Данные коллекции (с местами и рейтингами)
+    // ===== ДАННЫЕ =====
     let collection = [
         { id: 1, title: "Дюна: Часть вторая", type: "Фильм", rating: 9, place: 1, poster: "" },
         { id: 2, title: "Оппенгеймер", type: "Фильм", rating: 8, place: 2, poster: "" },
         { id: 3, title: "Рик и Морти", type: "Сериал", rating: 10, place: 1, poster: "" }
     ];
 
-    // Данные библиотеки (просто список + флаг "Хочу посмотреть")
     let library = [
         { id: 101, title: "Дюна: Мессия", type: "Фильм", wishlist: true, poster: "" },
         { id: 102, title: "Медленные лошади", type: "Сериал", wishlist: true, poster: "" },
         { id: 103, title: "Головоломка 2", type: "Фильм", wishlist: false, poster: "" }
     ];
 
-    // Состояние
-    let currentMainTab = 'collection'; // 'collection' | 'library'
-    let currentSubTab = 'Фильм'; // 'Фильм' | 'Сериал'
-    let currentLibraryFilter = 'all'; // 'all' | 'wishlist'
-    let editingId = null; // ID редактируемого элемента
-    let editingMode = null; // 'collection' | 'library'
+    // ===== СОСТОЯНИЕ =====
+    let currentMainTab = 'collection';
+    let currentSubTab = 'Фильм';
+    let currentLibraryFilter = 'all';
+    let editingId = null;
+    let editingMode = null;
     let base64Image = null;
     let searchQuery = "";
     let detailItemId = null;
     let detailMode = null;
 
-    // DOM
+    // ===== DOM =====
     const movieList = document.getElementById('movieList');
     const modalOverlay = document.getElementById('modalOverlay');
     const detailOverlay = document.getElementById('detailOverlay');
@@ -795,7 +835,6 @@
     const filterAll = document.getElementById('filterAll');
     const filterWishlist = document.getElementById('filterWishlist');
     
-    // Inputs формы
     const inputTitle = document.getElementById('inputTitle');
     const inputType = document.getElementById('inputType');
     const inputPlace = document.getElementById('inputPlace');
@@ -808,7 +847,6 @@
     const wishlistCheckboxGroup = document.getElementById('wishlistCheckboxGroup');
     const inputWishlist = document.getElementById('inputWishlist');
 
-    // Детали
     const detailPoster = document.getElementById('detailPoster');
     const detailTitle = document.getElementById('detailTitle');
     const detailType = document.getElementById('detailType');
@@ -819,7 +857,7 @@
     const detailDeleteBtn = document.getElementById('detailDeleteBtn');
     const detailAddToCollection = document.getElementById('detailAddToCollection');
 
-    // ========== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ==========
+    // ===== ФУНКЦИИ =====
     function switchMainTab(tab, el) {
         currentMainTab = tab;
         document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
@@ -861,7 +899,6 @@
         render();
     }
 
-    // ========== ПОИСК ==========
     searchToggle.addEventListener('click', () => {
         searchBar.classList.toggle('active');
         if (searchBar.classList.contains('active')) {
@@ -878,7 +915,6 @@
         render();
     });
 
-    // ========== РЕНДЕР ==========
     function render() {
         movieList.innerHTML = '';
         
@@ -899,7 +935,6 @@
             }
         }
 
-        // Обновляем счетчик
         const countEl = document.getElementById('countDisplay');
         if (countEl) countEl.textContent = `(${items.length})`;
 
@@ -918,7 +953,6 @@
 
             const posterUrl = item.poster ? item.poster : 'https://via.placeholder.com/50x70/333/fff?text=' + (item.title[0] || '?');
 
-            // Внутренняя часть карточки
             let innerHTML = '';
             
             if (currentMainTab === 'collection') {
@@ -942,7 +976,6 @@
                     </div>
                 `;
             } else {
-                // Библиотека
                 innerHTML = `
                     <img src="${posterUrl}" alt="poster" class="movie-poster">
                     <div class="movie-info">
@@ -955,7 +988,6 @@
                 `;
             }
 
-            // Кнопка меню (для обоих режимов)
             innerHTML += `
                 <button class="options-btn" onclick="toggleMenu(event, ${item.id}, '${currentMainTab}')">
                     <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
@@ -974,7 +1006,6 @@
 
             card.innerHTML = innerHTML;
 
-            // Клик по карточке - открыть визитку
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.options-btn') || e.target.closest('.rating-btn') || e.target.closest('.context-menu') || e.target.closest('.wishlist-btn')) {
                     return;
@@ -982,7 +1013,6 @@
                 openDetail(item.id, currentMainTab);
             });
 
-            // Drag & Drop только для коллекции
             if (currentMainTab === 'collection') {
                 card.addEventListener('dragstart', handleDragStart);
                 card.addEventListener('dragover', handleDragOver);
@@ -994,7 +1024,7 @@
         });
     }
 
-    // ========== DRAG & DROP ==========
+    // ===== DRAG & DROP =====
     let draggedItem = null;
 
     function handleDragStart(e) {
@@ -1047,7 +1077,7 @@
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    // ========== РЕЙТИНГ ==========
+    // ===== РЕЙТИНГ =====
     window.changeRating = (event, id, delta) => {
         event.stopPropagation();
         const movie = collection.find(m => m.id === id);
@@ -1063,7 +1093,7 @@
         }
     };
 
-    // ========== WISHLIST ==========
+    // ===== WISHLIST =====
     window.toggleWishlist = (event, id) => {
         event.stopPropagation();
         const item = library.find(m => m.id === id);
@@ -1073,7 +1103,7 @@
         }
     };
 
-    // ========== МЕНЮ ==========
+    // ===== МЕНЮ =====
     window.toggleMenu = (event, id, mode) => {
         event.stopPropagation();
         document.querySelectorAll('.context-menu').forEach(menu => {
@@ -1087,7 +1117,7 @@
         document.querySelectorAll('.context-menu').forEach(menu => menu.classList.remove('active'));
     });
 
-    // ========== ВИЗИТКА ==========
+    // ===== ВИЗИТКА =====
     window.openDetail = (id, mode) => {
         const item = mode === 'collection' ? collection.find(m => m.id === id) : library.find(m => m.id === id);
         if (!item) return;
@@ -1107,7 +1137,6 @@
             detailRating.textContent = item.rating;
             detailAddToCollection.style.display = 'none';
         } else {
-            // В библиотеке скрываем статистику, показываем кнопку "В коллекцию"
             detailStats.style.display = 'none';
             detailAddToCollection.style.display = 'flex';
         }
@@ -1124,7 +1153,6 @@
         if (e.target === detailOverlay) closeDetail();
     });
 
-    // Кнопки в визитке
     detailEditBtn.addEventListener('click', () => {
         if (detailItemId) {
             const id = detailItemId;
@@ -1148,15 +1176,12 @@
             const item = library.find(m => m.id === detailItemId);
             if (item) {
                 closeDetail();
-                setTimeout(() => {
-                    // Открываем форму добавления в коллекцию с заполненными данными
-                    openFormForCollection(item);
-                }, 300);
+                setTimeout(() => openFormForCollection(item), 300);
             }
         }
     });
 
-    // ========== ФОРМА ==========
+    // ===== ФОРМА =====
     function openFormForCollection(sourceItem) {
         editingId = null;
         editingMode = 'collection';
@@ -1178,7 +1203,6 @@
         }
         inputFile.value = '';
 
-        // Показываем поля коллекции, скрываем чекбокс
         collectionFields.style.display = 'flex';
         wishlistCheckboxGroup.style.display = 'none';
 
@@ -1221,7 +1245,6 @@
         if (e.target === modalOverlay) modalOverlay.classList.remove('active');
     });
 
-    // Загрузка файла
     inputFile.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -1236,7 +1259,6 @@
         }
     });
 
-    // Сохранение
     saveBtn.addEventListener('click', () => {
         const title = inputTitle.value.trim();
         const type = inputType.value;
@@ -1268,7 +1290,6 @@
                 });
             }
         } else {
-            // Библиотека
             const wishlist = inputWishlist.checked;
             
             if (editingId) {
@@ -1291,7 +1312,6 @@
 
         modalOverlay.classList.remove('active');
         
-        // Если тип не совпадает с текущим табом, переключаем
         if (type !== currentSubTab) {
             const targetTab = document.querySelector(`.sub-tab[data-type="${type}"]`);
             switchSubTab(type, targetTab);
@@ -1300,7 +1320,6 @@
         }
     });
 
-    // Редактирование
     window.editItem = (id, mode) => {
         editingId = id;
         editingMode = mode;
@@ -1353,7 +1372,6 @@
         modalOverlay.classList.add('active');
     };
 
-    // Удаление
     window.deleteItem = (id, mode) => {
         if (confirm("Удалить этот элемент?")) {
             const card = document.querySelector(`.movie-card[data-id="${id}"]`);
@@ -1379,7 +1397,7 @@
         }
     };
 
-    // Инициализация
+    // Старт
     render();
 </script>
 
